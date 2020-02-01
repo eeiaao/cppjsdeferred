@@ -1,4 +1,5 @@
-# jspromisefactory
+# jspromisefactory 
+![C/C++ CI](https://github.com/eeiaao/jspromisefactory/workflows/C/C++%20CI/badge.svg?branch=master)
 
 A library simplifying asynchronous interaction between Qt and QML.  
 Provides a bridge between asynchronous operations in C++ backend and user interface written in QML.  
