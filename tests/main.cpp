@@ -24,62 +24,77 @@
 
 #include <QtCore/qtimer.h>
 #include <QtQml/qqmlengine.h>
+#include <QtQml/qqmlparserstatus.h>
 #include <QtQuickTest/quicktest.h>
 
 #include "promisefactory.h"
 
-class DummyTest : public QObject
+class DummyTest : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
 
 public:
-    explicit DummyTest(QObject* parent = nullptr) : QObject(parent) {}
+    explicit DummyTest(QObject* parent = nullptr)
+        : QObject(parent)
+        , QQmlParserStatus()
+    {}
 
-    template<typename F>
-    QJSValue withPromise(F&& fn)
+
+    void classBegin() override
+    {
+    }
+
+    void componentComplete() override
     {
         auto engine = qmlEngine(this);
         Q_ASSERT(engine);
-        auto promise = m_promiseFactory.create(engine);
+        m_promiseFactory.setQQmlEngine(engine);
+    }
+
+private:
+    template<typename F>
+    QJSValue withPromise(F&& fn)
+    {
+        auto promise = m_promiseFactory.create();
         QTimer::singleShot(0, this, [fn, promise]() mutable {
             fn(promise);
         });
         return promise;
     }
 
-    Q_INVOKABLE QJSValue tst_resolve_single_value()
+public Q_SLOTS:
+    QJSValue tst_resolve_single_value()
     {
         return withPromise([this](QJSValue &promise) { m_promiseFactory.resolve(promise, {144}); });
     }
 
-    Q_INVOKABLE QJSValue tst_reject_single_value()
+    QJSValue tst_reject_single_value()
     {
         return withPromise([this](QJSValue &promise) { m_promiseFactory.reject(promise, {"rejected"}); });
     }
 
-    Q_INVOKABLE QJSValue tst_resolve_values_list()
+    QJSValue tst_resolve_values_list()
     {
         return withPromise([this](QJSValue &promise) { m_promiseFactory.resolve(promise, {1, 2, 3}); });
     }
 
-    Q_INVOKABLE QJSValue tst_reject_values_list()
+    QJSValue tst_reject_values_list()
     {
         return withPromise([this](QJSValue &promise) { m_promiseFactory.reject(promise, {"rejected", 17}); });
     }
 
-    Q_INVOKABLE QJSValue tst_resolve_nothing()
+    QJSValue tst_resolve_nothing()
     {
         return withPromise([this](QJSValue &promise) { m_promiseFactory.resolve(promise); });
     }
 
-    Q_INVOKABLE QJSValue tst_reject_nothing()
+    QJSValue tst_reject_nothing()
     {
         return withPromise([this](QJSValue &promise) { m_promiseFactory.reject(promise); });
     }
 
 private:
     PromiseFactory m_promiseFactory;
-
 };
 
 class Setup : public QObject

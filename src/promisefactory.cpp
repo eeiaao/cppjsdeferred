@@ -25,14 +25,20 @@
 #include "promisefactory.h"
 
 #include <QtQml/qqmlcomponent.h>
+#include <QtQml/qqmlengine.h>
+
+PromiseFactory::PromiseFactory(QQmlEngine *engine)
+{
+    m_engine = engine;
+}
 
 PromiseFactory::~PromiseFactory()
 {
-    for (auto it = std::begin(m_hash); it != std::end(m_hash); ++it)
-    {
-        it.key()->deleteLater();
-        m_hash.erase(it);
-    }
+}
+
+void PromiseFactory::setQQmlEngine(QQmlEngine *engine)
+{
+    m_engine = engine;
 }
 
 QJSValue PromiseFactory::create(QQmlEngine *engine)
@@ -69,18 +75,19 @@ QJSValue PromiseFactory::create(QQmlEngine *engine)
         "}\n"
     };
 
-    QQmlComponent promiseComponent(engine);
+    auto qmlEngine = engine ? engine : m_engine;
+    Q_ASSERT(qmlEngine);
+    QQmlEngine::setObjectOwnership(qmlEngine, QQmlEngine::CppOwnership);
+    auto qmlEngineObject = qmlEngine->newQObject(qmlEngine);
+
+    QQmlComponent promiseComponent(qmlEngine);
     promiseComponent.setData(promise_qml, QUrl());
 
     auto container = promiseComponent.create();
-    auto containerObject = engine->newQObject(container);
+    auto containerObject = qmlEngine->newQObject(container);
 
     QJSValue promise = containerObject.property("create").call();
-    promise.setProperty("container", containerObject);
-
-    QMutexLocker lock(&m_mutex);
-    m_hash.insert(container, engine);
-    lock.unlock();
+    promise.setProperty("engine", qmlEngineObject);
 
     return promise;
 }
@@ -102,29 +109,25 @@ void PromiseFactory::resolveArgumentsCountAndCall(QJSValue &callable, const QJSV
     Q_ASSERT(callable.isCallable());
     Q_ASSERT(instance.isObject());
 
-    auto container = instance.property("container");
-    auto containerObject = container.toQObject();
-    Q_ASSERT(containerObject);
-
-    QMutexLocker lock(&m_mutex);
-    auto engine = m_hash.take(containerObject);
-    containerObject->deleteLater();
-    Q_ASSERT(engine);
-    lock.unlock();
+    auto engine = instance.property("engine");
+    auto engineObject = engine.toQObject();
+    Q_ASSERT(engineObject);
+    auto qmlEngine = static_cast<QQmlEngine*>(engineObject);
+    Q_ASSERT(qmlEngine);
 
     QJSValueList arguments;
     if (args.size() > 1)
     {
-        QJSValue argsArray = engine->newArray(static_cast<uint>(args.size()));
+        QJSValue argsArray = qmlEngine->newArray(static_cast<uint>(args.size()));
         for (int i = 0; i < args.size(); ++i)
         {
-            argsArray.setProperty(static_cast<quint32>(i), engine->toScriptValue(args.at(i)));
+            argsArray.setProperty(static_cast<quint32>(i), qmlEngine->toScriptValue(args.at(i)));
         }
         arguments << argsArray;
     }
     else if (args.size() == 1)
     {
-        arguments << engine->toScriptValue(args.at(0));
+        arguments << qmlEngine->toScriptValue(args.at(0));
     }
 
     callable.callWithInstance(instance, arguments);

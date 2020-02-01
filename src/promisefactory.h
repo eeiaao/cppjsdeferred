@@ -25,16 +25,17 @@
 #pragma once
 
 #include <QtQml/qjsvalue.h>
-#include <QtQml/qqmlengine.h>
 
-#include <QtCore/qmutex.h>
-
+class QQmlEngine;
 class PromiseFactory
 {
 public:
+    explicit PromiseFactory(QQmlEngine* engine = nullptr);
     ~PromiseFactory();
 
-    QJSValue create(QQmlEngine *engine);
+    void setQQmlEngine(QQmlEngine* engine);
+
+    QJSValue create(QQmlEngine *engine = nullptr);
 
     void resolve(const QJSValue &promise, const QVariantList &args = {});
     void reject(const QJSValue &promise, const QVariantList &args = {});
@@ -43,6 +44,5 @@ private:
     void resolveArgumentsCountAndCall(QJSValue &callable, const QJSValue &instance,
                                       const QVariantList &args);
 
-    QMutex m_mutex;
-    QHash<QObject *, QQmlEngine *> m_hash;
+    QQmlEngine* m_engine;
 };
