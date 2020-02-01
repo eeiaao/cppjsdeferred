@@ -32,6 +32,7 @@
 class DummyTest : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
+    Q_INTERFACES(QQmlParserStatus)
 
 public:
     explicit DummyTest(QObject* parent = nullptr)
