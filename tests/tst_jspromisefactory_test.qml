@@ -37,7 +37,7 @@ TestCase {
     function test_resolve_single_value() {
         let promise = test.tst_resolve_single_value();
         let ok = false;
-        promise.then(function(value) {
+        promise.then((value) => {
             compare(value, 144, "resolve single value");
             ok = true;
         });
@@ -48,7 +48,7 @@ TestCase {
     function test_reject_single_value() {
         let promise = test.tst_reject_single_value();
         let ok = false;
-        promise.catch(function(value) {
+        promise.catch((value) => {
             compare(value, "rejected", "reject single value");
             ok = true;
         });
@@ -70,7 +70,7 @@ TestCase {
     function test_reject_values_list() {
         let promise = test.tst_reject_values_list();
         let ok = false;
-        promise.catch(function(values) {
+        promise.catch((values) => {
             compare(values, ["rejected", 17], "reject values list");
             ok = true;
         });
@@ -81,7 +81,7 @@ TestCase {
     function test_resolve_nothing() {
         let promise = test.tst_resolve_nothing();
         let ok = false;
-        promise.then(function(value) {
+        promise.then((value) => {
             compare(value, undefined, "resolve nothing");
             ok = true;
         });
@@ -92,7 +92,7 @@ TestCase {
     function test_reject_nothing() {
         let promise = test.tst_reject_nothing();
         let ok = false;
-        promise.catch(function(value) {
+        promise.catch((value) => {
             compare(value, undefined, "reject nothing");
             ok = true;
         });
