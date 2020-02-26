@@ -1,6 +1,6 @@
 find_package(Qt5QuickTest REQUIRED)
 
-include_directories(${jspromisefactory_SOURCE_DIR}/src)
+include_directories(${cppjsdeferred_SOURCE_DIR}/src)
 
 set(CMAKE_AUTOMOC ON)
 
