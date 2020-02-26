@@ -99,5 +99,51 @@ TestCase {
         wait(1);
         compare(ok, true, "reject nothing");
     }
+
+    function test_deferred_chaining() {
+        let promise = test.tst_resolve_single_value();
+        let ok = false;
+        promise
+        .then((value) => {
+                  compare(value, 144, "deferred chaining (1)");
+                  return test.tst_resolve_nothing();
+              })
+        .then((value) => {
+                  compare(value, undefined, "deferred chaining (2)");
+                  return test.tst_resolve_values_list();
+              })
+        .then((values) => {
+                  compare(values, [1,2,3], "deferred chaining (3)");
+                  ok = true;
+              });
+        wait(1);
+        compare(ok, true, "deferred chaining");
+    }
+
+    function test_mixed_deferred_promise_chaining() {
+        let promise = test.tst_resolve_single_value();
+        let ok = false;
+        promise
+        .then((value) => {
+                  compare(value, 144, "mixed deferred promise chaining (1)");
+                  return test.tst_resolve_nothing();
+              })
+        .then((value) => {
+                  compare(value, undefined, "mixed deferred promise chaining (2)");
+                  return new Promise((resolve, reject) => {
+                                        Qt.callLater(resolve.bind(this, 46));
+                                     });
+              })
+        .then((value) => {
+                  compare(value, 46, "mixed deferred promise chaining (3)");
+                  return test.tst_resolve_values_list();
+              })
+        .then((values) => {
+                  compare(values, [1,2,3], "mixed deferred promise chaining (4)");
+                  ok = true;
+              });
+        wait(1);
+        compare(ok, true, "mixed deferred promise chaining");
+    }
 }
 
