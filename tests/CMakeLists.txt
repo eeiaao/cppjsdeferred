@@ -10,7 +10,7 @@ add_definitions(-DQUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 add_executable(Test main.cpp)
 
 target_link_libraries(Test PRIVATE
-    jspromisefactory
+    cppjsdeferred
 
     Qt5::QuickTest
 )

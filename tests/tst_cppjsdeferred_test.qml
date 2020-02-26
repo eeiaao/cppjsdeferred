@@ -28,7 +28,7 @@ import QtTest 1.0
 import DummyTest 1.0
 
 TestCase {
-    name: "jspromisefactory_test"
+    name: "cppjsdeferred_test"
 
     Test {
         id: test

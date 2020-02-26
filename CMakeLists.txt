@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(jspromisefactory LANGUAGES CXX)
+project(cppjsdeferred LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -11,4 +11,4 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 enable_testing ()
-add_test (NAME jspromisefactory_qml_integration_test COMMAND Test)
+add_test (NAME cppjsdeferred_qml_integration_test COMMAND Test)
