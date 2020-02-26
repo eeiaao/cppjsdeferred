@@ -9,7 +9,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-    - uses: jurplel/install-qt-action@v2
+    - uses: ouuan/install-qt-action@v2.3.1
     - run: mkdir build && cd build && cmake ..
     - run: cmake --build build --target Test
     - run: cd build && QT_PLUGIN_PATH=${Qt5_Dir}/plugins QML2_IMPORT_PATH=${Qt5_Dir}/qml QT_QPA_PLATFORM=offscreen ctest -V
