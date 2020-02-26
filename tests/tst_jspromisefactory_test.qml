@@ -145,5 +145,131 @@ TestCase {
         wait(1);
         compare(ok, true, "mixed deferred promise chaining");
     }
+
+    function test_exception() {
+        let promise = test.tst_resolve_single_value();
+        let ok = false;
+        promise
+        .then((value) => {
+                  compare(value, 144, "exception test (1)");
+                  throw new Error("error");
+              })
+        .catch((exc) => {
+                   compare(exc, "Error: error", "exception test (2)");
+                   ok = true;
+               });
+        wait(1);
+        compare(ok, true, "exception test (3)");
+    }
+
+    function test_rejection() {
+        let promise = test.tst_resolve_single_value();
+        let ok = false;
+        promise
+        .then((value) => {
+                  compare(value, 144, "rejection test (1)");
+                  return Promise.reject(new Error("error"));
+              })
+        .catch((exc) => {
+                   compare(exc, "Error: error", "rejection test (2)");
+                   ok = true;
+               });
+        wait(1);
+        compare(ok, true, "rejection test (3)");
+    }
+
+    function test_exception_chain_continuation() {
+        let promise = test.tst_resolve_single_value();
+        let ok = false;
+        promise
+        .then((value) => {
+                  compare(value, 144, "exception test (1)");
+                  throw new Error("error");
+              })
+        .catch((exc) => {
+                   compare(exc, "Error: error", "exception test (2)");
+               })
+        .then(() => {
+                  return new Promise((resolve, reject) => {
+                                        Qt.callLater(resolve.bind(this, 46));
+                                     });
+              })
+        .then((value) => {
+                  compare(value, 46, "exception test (3)");
+                  ok = true;
+              })
+        wait(1);
+        compare(ok, true, "exception test (4)");
+    }
+
+    function test_rejection_chain_continuation() {
+        let promise = test.tst_resolve_single_value();
+        let ok = false;
+        promise
+        .then((value) => {
+                  compare(value, 144, "rejection test (1)");
+                  return Promise.reject(new Error("error"));
+              })
+        .catch((exc) => {
+                   compare(exc, "Error: error", "rejection test (2)");
+               })
+        .then(() => {
+                  return new Promise((resolve, reject) => {
+                                        Qt.callLater(resolve.bind(this, 46));
+                                     });
+              })
+        .then((value) => {
+                  compare(value, 46, "rejection test (3)");
+                  ok = true;
+              })
+        wait(1);
+        compare(ok, true, "rejection test (4)");
+    }
+
+    function test_exception_chain_break() {
+        let promise = test.tst_resolve_single_value();
+        let ok = false;
+        promise
+        .then((value) => {
+                  compare(value, 144, "exception test (1)");
+                  throw new Error("error");
+              })
+        .catch((exc) => {
+                   compare(exc, "Error: error", "exception test (2)");
+                   throw exc;
+               })
+        .then(() => {
+                  compare(true, false, "exception test: unreachable")
+              })
+        .catch(() => {
+                   ok = true;
+               });
+
+        wait(1);
+        compare(ok, true, "exception test (4)");
+    }
+
+    function test_rejection_chain_break() {
+        let promise = test.tst_resolve_single_value();
+        let ok = false;
+        promise
+        .then((value) => {
+                  compare(value, 144, "rejection test (1)");
+                  return Promise.reject(new Error("error"));
+              })
+        .catch((exc) => {
+                   compare(exc, "Error: error", "rejection test (2)");
+                   return Promise.reject(exc);
+               })
+        .then(() => {
+                  compare(true, false, "rejection test: unreachable")
+              })
+        .catch(() => {
+                   ok = true;
+               });
+
+        wait(1);
+        compare(ok, true, "rejection test (4)");
+    }
 }
 
